@@ -23,6 +23,7 @@ docs_view.new = function()
   self.window:buffer_option('buftype', 'nofile')
   self.window:buffer_option('bufhidden', 'wipe')
   self.window:buffer_option('swapfile', false)
+  self.window:buffer_option('filetype', 'cmp_docs')
   return self
 end
 
@@ -58,6 +59,10 @@ docs_view.open = function(self, e, view)
       vim.api.nvim_buf_set_lines(0, 0, -1, false, {})
       vim.lsp.util.stylize_markdown(0, documents, {
         max_width = max_width,
+        max_height = documentation.max_height,
+      })
+      vim.lsp.util.stylize_markdown(0, documents, {
+        max_width = max_width - border_info.horiz,
         max_height = documentation.max_height,
       })
       vim.api.nvim_buf_set_option(0, 'modifiable', false)
