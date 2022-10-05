@@ -40,6 +40,7 @@ return function()
     },
 
     formatting = {
+      expandable_indicator = true,
       fields = { 'abbr', 'kind', 'menu' },
       format = function(_, vim_item)
         return vim_item
@@ -91,6 +92,7 @@ return function()
       completion = {
         border = { '', '', '', '', '', '', '', '' },
         winhighlight = 'Normal:Pmenu,FloatBorder:Pmenu,CursorLine:PmenuSel,Search:None',
+        scrolloff = 0,
         col_offset = 0,
         side_padding = 1,
       },

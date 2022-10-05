@@ -61,7 +61,7 @@ cmp.ItemField = {
 ---@field public __call fun(c: cmp.ConfigSchema)
 ---@field public buffer fun(c: cmp.ConfigSchema)
 ---@field public global fun(c: cmp.ConfigSchema)
----@field public cmdline fun(type: string, c: cmp.ConfigSchema)
+---@field public cmdline fun(type: string|string[], c: cmp.ConfigSchema)
 ---@field public filetype fun(type: string|string[], c: cmp.ConfigSchema)
 
 ---@class cmp.SourceApiParams: cmp.SourceConfig
@@ -116,6 +116,7 @@ cmp.ItemField = {
 ---@field public zindex integer|nil
 ---@field public max_width integer|nil
 ---@field public max_height integer|nil
+---@field public scrolloff integer|nil
 
 ---@class cmp.ConfirmationConfig
 ---@field public default_behavior cmp.ConfirmBehavior
@@ -132,6 +133,7 @@ cmp.ItemField = {
 
 ---@class cmp.FormattingConfig
 ---@field public fields cmp.ItemField[]
+---@field public expandable_indicator boolean
 ---@field public format fun(entry: cmp.Entry, vim_item: vim.CompletedItem): vim.CompletedItem
 
 ---@class cmp.SnippetConfig
