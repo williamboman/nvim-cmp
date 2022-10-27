@@ -239,14 +239,14 @@ entry.get_vim_item = function(self, suggest_offset)
     local is_expandable = false
     local expandable_indicator = config.get().formatting.expandable_indicator
     if #(misc.safe(completion_item.additionalTextEdits) or {}) > 0 then
-    is_expandable = true
+      is_expandable = true
     elseif completion_item.insertTextFormat == types.lsp.InsertTextFormat.Snippet then
-    is_expandable = self:get_insert_text() ~= word
+      is_expandable = self:get_insert_text() ~= word
     elseif completion_item.kind == types.lsp.CompletionItemKind.Snippet then
-    is_expandable = true
+      is_expandable = true
     end
     if expandable_indicator and is_expandable then
-    abbr = abbr .. '~'
+      abbr = abbr .. '~'
     end
 
     -- append delta text
@@ -339,7 +339,9 @@ entry.get_replace_range = function(self)
       else
         replace_range = self:get_completion_item().textEdit.range
       end
-    else
+    end
+
+    if not replace_range or (self.context.cursor.character == replace_range['end'].character) then
       replace_range = {
         start = {
           line = self.source_replace_range.start.line,
