@@ -83,6 +83,21 @@ keymap.backspace = function(count)
   return table.concat(keys, '')
 end
 
+---Create delete keys.
+---@param count string|integer
+---@return string
+keymap.delete = function(count)
+  if type(count) == 'string' then
+    count = vim.fn.strchars(count, true)
+  end
+  if count <= 0 then
+    return ''
+  end
+  local keys = {}
+  table.insert(keys, keymap.t(string.rep('<Del>', count)))
+  return table.concat(keys, '')
+end
+
 ---Update indentkeys.
 ---@param expr? string
 ---@return string
@@ -193,6 +208,7 @@ keymap.get_map = function(mode, lhs)
         rhs = map.rhs or '',
         expr = map.expr == 1,
         callback = map.callback,
+        desc = map.desc,
         noremap = map.noremap == 1,
         script = map.script == 1,
         silent = map.silent == 1,
@@ -210,6 +226,7 @@ keymap.get_map = function(mode, lhs)
         rhs = map.rhs or '',
         expr = map.expr == 1,
         callback = map.callback,
+        desc = map.desc,
         noremap = map.noremap == 1,
         script = map.script == 1,
         silent = map.silent == 1,

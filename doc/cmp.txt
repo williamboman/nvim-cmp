@@ -44,7 +44,7 @@ A recommended configuration can be found below.
     1. You must provide a `snippet.expand` function.
     2. `cmp.setup.cmdline` won't work if you use the `native` completion menu.
     3. You can disable the `default` options by specifying `cmp.config.disable` value.
->
+>vim
   call plug#begin(s:plug_dir)
   Plug 'neovim/nvim-lspconfig'
   Plug 'hrsh7th/cmp-nvim-lsp'
@@ -169,11 +169,11 @@ NOTE: `<Cmd>lua require('cmp').complete()<CR>` can be used to call these functio
 *cmp.abort* ()
   Closes the completion menu and restore the current line to the state before the current completion was started.
 
-*cmp.select_next_item* (option: { behavior = cmp.SelectBehavior })
-  Select the next item.
+*cmp.select_next_item* (option: { behavior = cmp.SelectBehavior, count = 1 })
+  Select the next item. Set count with large number to select pagedown.
 
-*cmp.select_prev_item* (option: { behavior = cmp.SelectBehavior })*
-  Select the previous item.
+*cmp.select_prev_item* (option: { behavior = cmp.SelectBehavior, count = 1 })
+  Select the previous item. Set count with large number to select pageup.
 
 *cmp.open_docs_preview*
   Opens the docs window (if visible) in a preview window.
@@ -185,7 +185,7 @@ NOTE: `<Cmd>lua require('cmp').complete()<CR>` can be used to call these functio
   Invoke completion.
 
   The following configuration defines a key mapping to show completion only for vsnip snippets.
->
+>lua
   cmp.setup {
     mapping = {
       ['<C-s>'] = cmp.mapping.complete({
@@ -197,14 +197,14 @@ NOTE: `<Cmd>lua require('cmp').complete()<CR>` can be used to call these functio
       })
     }
   }
-< >
+< >vim
   inoremap <C-S> <Cmd>lua require('cmp').complete({ config = { sources = { { name = 'vsnip' } } } })<CR>
 <
   NOTE: `config` in that case means a temporary setting, but `config.mapping` remains permanent.
 
 *cmp.complete_common_string* ()
   Complete common string (similar to shell completion behavior).
->
+>lua
   cmp.setup {
     mapping = {
       ['<C-l>'] = cmp.mapping(function(fallback)
@@ -242,7 +242,7 @@ The `fallback` function can be used to call an existing mapping.
 For example, typical pair-wise plugins automatically define mappings for `<CR>` and `(`.
 Nvim-cmp will overwrite it if you provide a mapping. To call the existing mapping,
 you would need to invoke the `fallback` function.
->
+>lua
   cmp.setup {
     mapping = {
       ['<CR>'] = function(fallback)
@@ -254,7 +254,7 @@ you would need to invoke the `fallback` function.
       end
     }
   }
-< >
+< >lua
   cmp.setup {
     mapping = {
       ['<Tab>'] = function(fallback)
@@ -269,7 +269,7 @@ you would need to invoke the `fallback` function.
 <
 
 It is possible to specify the modes the mapping should be active in (`i` = insert mode, `c` = command mode, `s` = select mode):
->
+>lua
   cmp.setup {
     mapping = {
       ['<CR>'] = cmp.mapping(your_mapping_function, { 'i', 'c' })
@@ -277,7 +277,7 @@ It is possible to specify the modes the mapping should be active in (`i` = inser
   }
 <
 You can also specify different mappings for different modes by passing a table:
->
+>lua
   cmp.setup {
     mapping = {
       ['<CR>'] = cmp.mapping({
@@ -295,10 +295,10 @@ There are also builtin mapping helper functions you can use:
   *cmp.mapping.abort* ()
     Same as |cmp.abort|.
 
-  *cmp.mapping.select_next_item* (option: { behavior = cmp.SelectBehavior })
+  *cmp.mapping.select_next_item* (option: { behavior = cmp.SelectBehavior, count = 1 })
     Same as |cmp.select_next_item|.
 
-  *cmp.mapping.select_prev_item* (option: { behavior = cmp.SelectBehavior })
+  *cmp.mapping.select_prev_item* (option: { behavior = cmp.SelectBehavior, count = 1 })
     Same as |cmp.select_prev_item|.
 
   *cmp.mapping.open_docs_preview*
@@ -356,7 +356,7 @@ NOTE: `kind` is a symbol after each completion option.
 *CmpItemKind%KIND_NAME%*
   Highlight group for the kind of the field for a specific `lsp.CompletionItemKind`.
   If you only want to overwrite the `method` kind's highlight group, you can do this:
->
+>vim
     highlight CmpItemKindMethod guibg=NONE guifg=Orange
 <
 *CmpItemMenu*
@@ -496,7 +496,7 @@ sorting.priority_weight~
   Each item's original priority (given by its corresponding source) will be
   increased by `#sources - (source_index - 1)` and multiplied by `priority_weight`.
   That is, the final priority is calculated by the following formula:
->
+>lua
   final_score = orig_score + ((#sources - (source_index - 1)) * sorting.priority_weight)
 <
                                                 *cmp-config.sorting.comparators*
@@ -553,7 +553,7 @@ sources[n].group_index~
 
   For instance, you can set the `buffer`'s source `group_index` to a larger number
   if you don't want to see `buffer` source items while `nvim-lsp` source is available:
->
+>lua
     cmp.setup {
       sources = {
         { name = 'nvim_lsp', group_index = 1 },
@@ -562,7 +562,7 @@ sources[n].group_index~
     }
 <
   You can also achieve this by using the built-in configuration helper like this:
->
+>lua
     cmp.setup {
       sources = cmp.config.sources({
         { name = 'nvim_lsp' },
@@ -585,7 +585,7 @@ sources[n].entry_filter~
   This can be used to hide certain entries from a given source. For instance, you
   could hide all entries with kind `Text` from the `nvim_lsp` filter using the
   following source definition:
->
+>lua
   {
     name = 'nvim_lsp',
     entry_filter = function(entry, ctx)
@@ -636,6 +636,11 @@ window.completion.side_padding~
   `number`
   The ammount of padding to add on the completion window's sides
 
+                                     *cmp-config.window.completion.scrollbar*
+window.completion.scrollbar~
+  `boolean`
+  Wether the scrollbar should be enabled if there are more items that fit
+
                                      *cmp-config.window.documentation.max_width*
 window.documentation.max_width~
   `number`
@@ -663,7 +668,7 @@ cmp.config.compare~
 cmp.config.context~
 
   The `cmp.config.context` can be used for context-aware completion toggling.
->
+>lua
     cmp.setup {
       enabled = function()
         -- disable completion if the cursor is `Comment` syntax group.
@@ -689,7 +694,7 @@ cmp.config.sources~
     You can specify multiple source arrays. The sources are grouped in the
     order you specify, and the groups are displayed as a fallback, like chain
     completion.
->
+>lua
     cmp.setup {
       sources = cmp.config.sources({
         { name = 'nvim_lsp' },
@@ -703,7 +708,7 @@ cmp.config.window~
   *cmp.config.window.bordered* (option)
     Make the completion window `bordered`.
     The option is described in `cmp.ConfigSchema`.
->
+>lua
     cmp.setup {
       window = {
         completion = cmp.config.window.bordered(),
@@ -726,7 +731,7 @@ NOTE:
   and if you publish it on GitHub, add the `nvim-cmp` topic so users can find it more easily.
 
 Here is an example on how to create a custom source:
->
+>lua
   local source = {}
 
   ---Return whether this source is available in the current context or not (optional).
@@ -739,6 +744,13 @@ Here is an example on how to create a custom source:
   ---@return string
   function source:get_debug_name()
     return 'debug name'
+  end
+
+  ---Return LSP's PositionEncodingKind.
+  ---@NOTE: If this method is ommited, the default value will be `utf-16`.
+  ---@return lsp.PositionEncodingKind
+  function source:get_position_encoding_kind()
+    return 'utf-16'
   end
 
   ---Return the keyword pattern for triggering completion (optional).
@@ -801,7 +813,7 @@ How to disable the preselect feature? ~
   The LSP spec defines the `preselect` feature for completion.
 
   You can disable the `preselect` feature like this:
->
+>lua
   cmp.setup {
     preselect = cmp.PreselectMode.None
   }
@@ -810,7 +822,7 @@ How to disable the preselect feature? ~
 How to disable commitCharacters?~
 
   You can disable the commitCharacters feature (which is defined in LSP spec):
->
+>lua
   cmp.setup {
     confirmation = {
       get_commit_characters = function(commit_characters)
@@ -825,7 +837,7 @@ How to disable auto-completion?~
 How to use nvim-cmp as omnifunc?~
 
   You can disable auto-completion like this:
->
+>lua
   cmp.setup {
     ...
     completion = {
@@ -835,7 +847,7 @@ How to use nvim-cmp as omnifunc?~
   }
 <
   Then you will need to invoke completion manually.
->
+>vim
   inoremap <C-x><C-o> <Cmd>lua require('cmp').complete()<CR>
 <
 
@@ -843,7 +855,7 @@ How to disable nvim-cmp for a specific buffer?~
 How to setup nvim-cmp for a specific buffer?~
 
   You can setup buffer-specific configuration like this:
->
+>lua
   cmp.setup.filetype({ 'markdown', 'help' }, {
     sources = {
       { name = 'path' },
@@ -855,7 +867,7 @@ How to setup nvim-cmp for a specific buffer?~
 How to disable the documentation window?~
 
   Simply use the following config:
->
+>lua
   cmp.setup.filetype({ 'markdown', 'help' }, {
     window = {
       documentation = cmp.config.disable
@@ -875,12 +887,12 @@ How to integrate with copilot.vim?~
   Therefore, you should manage those plugins by yourself.
 
   Fortunately, the copilot.vim has a feature that disables the fallback mechanism.
->
+>vim
   let g:copilot_no_tab_map = v:true
   imap <expr> <Plug>(vimrc:copilot-dummy-map) copilot#Accept("\<Tab>")
 <
   You can manage copilot.vim's accept feature inside nvim-cmp's key-mapping function:
->
+>lua
   cmp.setup {
     mapping = {
       ['<C-g>'] = cmp.mapping(function(fallback)

@@ -1,13 +1,14 @@
 local misc = require('cmp.utils.misc')
 local buffer = require('cmp.utils.buffer')
 local api = require('cmp.utils.api')
+local config = require('cmp.config')
 
 ---@class cmp.WindowStyle
 ---@field public relative string
 ---@field public row integer
 ---@field public col integer
----@field public width integer
----@field public height integer
+---@field public width integer|float
+---@field public height integer|float
 ---@field public border string|string[]|nil
 ---@field public zindex integer|nil
 
@@ -36,7 +37,8 @@ window.new = function()
 end
 
 ---Set window option.
----NOTE: If the window already visible, immediately applied to it.
+---NOTE: If the window already visible, immediately applied to it. The OptionSet
+-- event is not triggered
 ---@param key string
 ---@param value any
 window.option = function(self, key, value)
@@ -50,12 +52,16 @@ window.option = function(self, key, value)
 
   self.opt[key] = value
   if self:visible() then
+    local eventignore = vim.opt.eventignore:get()
+    vim.opt.eventignore:append("OptionSet")
     vim.api.nvim_win_set_option(self.win, key, value)
+    vim.opt.eventignore = eventignore
   end
 end
 
 ---Set buffer option.
----NOTE: If the buffer already visible, immediately applied to it.
+---NOTE: If the buffer already visible, immediately applied to it. The OptionSet
+-- event is not triggered.
 ---@param key string
 ---@param value any
 window.buffer_option = function(self, key, value)
@@ -70,7 +76,10 @@ window.buffer_option = function(self, key, value)
   self.buffer_opt[key] = value
   local existing_buf = buffer.get(self.name)
   if existing_buf then
+    local eventignore = vim.opt.eventignore:get()
+    vim.opt.eventignore:append("OptionSet")
     vim.api.nvim_buf_set_option(existing_buf, key, value)
+    vim.opt.eventignore = eventignore
   end
 end
 
@@ -85,6 +94,11 @@ window.set_style = function(self, style)
   end
 
   self.style.zindex = self.style.zindex or 1
+
+  --- GUI clients are allowed to return fractional bounds, but we need integer
+  --- bounds to open the window
+  self.style.width = math.ceil(self.style.width)
+  self.style.height = math.ceil(self.style.height)
 end
 
 ---Return buffer id.
@@ -213,6 +227,7 @@ end
 ---Return win info.
 window.info = function(self)
   local border_info = self:get_border_info()
+  local scrollbar = config.get().window.completion.scrollbar
   local info = {
     row = self.style.row,
     col = self.style.col,
@@ -225,7 +240,7 @@ window.info = function(self)
     scrollbar_offset = 0,
   }
 
-  if self:get_content_height() > info.inner_height then
+  if self:get_content_height() > info.inner_height and scrollbar then
     info.scrollable = true
     if not border_info.visible then
       info.scrollbar_offset = 1
