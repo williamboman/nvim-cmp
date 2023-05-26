@@ -18,6 +18,7 @@ Config                                                              |cmp-config|
 Config Helper                                                |cmp-config-helper|
 Develop                                                            |cmp-develop|
 FAQ                                                                    |cmp-faq|
+
 ==============================================================================
 Abstract                                                          *cmp-abstract*
 
@@ -221,6 +222,20 @@ NOTE: `<Cmd>lua require('cmp').complete()<CR>` can be used to call these functio
   If you didn't select any item and the option table contains `select = true`,
   nvim-cmp will automatically select the first item.
 
+  You can control how the completion item is injected into
+  the file through the `behavior` option:
+
+  `behavior=cmp.ConfirmBehavior.Insert`: inserts the selected item and
+    moves adjacent text to the right (default).
+  `behavior=cmp.ConfirmBehavior.Replace`: replaces adjacent text with
+    the selected item.    
+>lua
+  cmp.setup {
+    mapping = {
+      ["<CR>"] = cmp.mapping.confirm({ select = true, behavior = cmp.ConfirmBehavior.Replace }),
+    }
+  }
+<
 *cmp.event:on* (%EVENT_NAME%, callback)
   Subscribe to nvim-cmp's event. Events are listed below.
 
@@ -404,10 +419,21 @@ performance.throttle~
   This is used to delay filtering and displaying completions.
 
                                         *cmp-config.performance.fetching_timeout*
-  performance.fetching_timeout~
+performance.fetching_timeout~
     `number`
     Sets the timeout of candidate fetching process.
     The nvim-cmp will wait to display the most prioritized source.
+
+                                            *cmp-config.performance.async_budget*
+performance.async_budget~
+    `number`
+    Maximum time (in ms) an async function is allowed to run during
+    one step of the event loop.
+
+                                        *cmp-config.performance.max_view_entries*
+performance.max_view_entries~
+    `number`
+    Maximum number of items to show in the entries list.
 
                                                           *cmp-config.preselect*
 preselect~
@@ -549,11 +575,6 @@ sources[n].trigger_characters~
 sources[n].priority~
   `number`
   The source-specific priority value.
-
-                                          *cmp-config.sources[n].max_item_count*
-sources[n].max_item_count~
-  `number`
-  The source-specific item count.
 
                                              *cmp-config.sources[n].group_index*
 sources[n].group_index~
@@ -924,7 +945,12 @@ How to integrate with copilot.vim?~
     }
   }
 <
+nvim-cmp does not work as expected.~
 
+  There are some known issues. Please check the following.
+
+  - nvim-cmp does not work with `set paste` option.
+  - Command line mode key mapping is unified regardless of `:`, `/`, `?`. Therefore, it is impossible to apply the mapping only to `:`.
 
 How to customize the menu appearance?~
 

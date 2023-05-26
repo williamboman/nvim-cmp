@@ -57,12 +57,13 @@ cmp.ItemField = {
 ---@field public reason? cmp.ContextReason
 ---@field public config? cmp.ConfigSchema
 
----@class cmp.Setup
----@field public __call fun(c: cmp.ConfigSchema)
+---@class cmp.SetupProperty
 ---@field public buffer fun(c: cmp.ConfigSchema)
 ---@field public global fun(c: cmp.ConfigSchema)
 ---@field public cmdline fun(type: string|string[], c: cmp.ConfigSchema)
 ---@field public filetype fun(type: string|string[], c: cmp.ConfigSchema)
+
+---@alias cmp.Setup cmp.SetupProperty | fun(c: cmp.ConfigSchema)
 
 ---@class cmp.SourceApiParams: cmp.SourceConfig
 
@@ -98,6 +99,8 @@ cmp.ItemField = {
 ---@field public debounce integer
 ---@field public throttle integer
 ---@field public fetching_timeout integer
+---@field public async_budget integer Maximum time (in ms) an async function is allowed to run during one step of the event loop.
+---@field public max_view_entries integer
 
 ---@class cmp.WindowConfig
 ---@field completion cmp.WindowConfig
@@ -155,7 +158,6 @@ cmp.ItemField = {
 ---@field public trigger_characters string[]|nil
 ---@field public keyword_pattern string|nil
 ---@field public keyword_length integer|nil
----@field public max_item_count integer|nil
 ---@field public group_index integer|nil
 ---@field public entry_filter nil|function(entry: cmp.Entry, ctx: cmp.Context): boolean
 

@@ -88,21 +88,25 @@ source.get_entries = function(self, ctx)
     return {}
   end
 
-  local target_entries = (function()
-    local key = { 'get_entries', self.revision }
-    for i = ctx.cursor.col, self.offset, -1 do
-      key[3] = string.sub(ctx.cursor_before_line, 1, i)
-      local prev_entries = self.cache:get(key)
-      if prev_entries then
-        return prev_entries
-      end
+  local target_entries = self.entries
+
+  local prev = self.cache:get({ 'get_entries', self.revision })
+
+  if prev and ctx.cursor.row == prev.ctx.cursor.row then
+    if ctx.cursor.col == prev.ctx.cursor.col then
+      return prev.entries
     end
-    return self.entries
-  end)()
+    -- only use prev entries when cursor is moved forward.
+    -- and the pattern offset is the same.
+    if ctx.cursor.col >= prev.ctx.cursor.col and ctx.offset == prev.ctx.offset then
+      target_entries = prev.entries
+    end
+  end
 
   local entry_filter = self:get_entry_filter()
 
   local inputs = {}
+  ---@type cmp.Entry[]
   local entries = {}
   local matching_config = self:get_matching_config()
   for _, e in ipairs(target_entries) do
@@ -119,21 +123,18 @@ source.get_entries = function(self, ctx)
       e.exact = e:get_filter_text() == inputs[o] or e:get_word() == inputs[o]
 
       if entry_filter(e, ctx) then
-        table.insert(entries, e)
+        entries[#entries + 1] = e
       end
     end
-  end
-  self.cache:set({ 'get_entries', tostring(self.revision), ctx.cursor_before_line }, entries)
-
-  local max_item_count = self:get_source_config().max_item_count or 200
-  local limited_entries = {}
-  for _, e in ipairs(entries) do
-    table.insert(limited_entries, e)
-    if max_item_count and #limited_entries >= max_item_count then
-      break
+    async.yield()
+    if ctx.aborted then
+      async.abort()
     end
   end
-  return limited_entries
+
+  self.cache:set({ 'get_entries', self.revision }, { entries = entries, ctx = ctx })
+
+  return entries
 end
 
 ---Get default insert range (UTF8 byte index).
@@ -328,7 +329,10 @@ source.complete = function(self, ctx, callback)
       context = ctx,
       completion_context = completion_context,
     }),
-    self.complete_dedup(vim.schedule_wrap(function(response)
+    self.complete_dedup(function(response)
+      if self.context ~= ctx then
+        return
+      end
       ---@type lsp.CompletionResponse
       response = response or {}
 
@@ -349,7 +353,7 @@ source.complete = function(self, ctx, callback)
           end
         end
         self.revision = self.revision + 1
-        if #self:get_entries(ctx) == 0 then
+        if #self.entries == 0 then
           self.offset = old_offset
           self.entries = old_entries
           self.revision = self.revision + 1
@@ -363,7 +367,7 @@ source.complete = function(self, ctx, callback)
         self.status = prev_status
       end
       callback()
-    end))
+    end)
   )
   return true
 end
