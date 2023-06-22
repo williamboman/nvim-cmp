@@ -68,7 +68,7 @@ entry.get_offset = function(self)
               return idx
             end
           end
-          return offset + 1
+          return offset
         end)
       end
     else
@@ -402,11 +402,13 @@ entry.match = function(self, input, matching_config)
       end
     end
 
-    if score ~= 0 then
-      local vim_item = self:get_vim_item(self:get_offset())
+    -- Fix highlight if filterText is not the same to vim_item.abbr.
+    if score > 0 then
+      local vim_item = self:get_vim_item(self.source_offset)
       filter_text = vim_item.abbr or vim_item.word
       if not checked[filter_text] then
-        _, matches = matcher.match(input, filter_text, option)
+        local diff = self.source_offset - self:get_offset()
+        _, matches = matcher.match(input:sub(1 + diff), filter_text, option)
       end
     end
 

@@ -90,15 +90,11 @@ source.get_entries = function(self, ctx)
 
   local target_entries = self.entries
 
-  local prev = self.cache:get({ 'get_entries', self.revision })
-
-  if prev and ctx.cursor.row == prev.ctx.cursor.row then
-    if ctx.cursor.col == prev.ctx.cursor.col then
-      return prev.entries
-    end
+  local prev = self.cache:get({ 'get_entries', tostring(self.revision) })
+  if prev and ctx.cursor.row == prev.ctx.cursor.row and self.offset == prev.offset then
     -- only use prev entries when cursor is moved forward.
     -- and the pattern offset is the same.
-    if ctx.cursor.col >= prev.ctx.cursor.col and ctx.offset == prev.ctx.offset then
+    if prev.ctx.cursor.col <= ctx.cursor.col then
       target_entries = prev.entries
     end
   end
@@ -132,7 +128,15 @@ source.get_entries = function(self, ctx)
     end
   end
 
-  self.cache:set({ 'get_entries', self.revision }, { entries = entries, ctx = ctx })
+  self.cache:set({ 'get_entries', tostring(self.revision) }, { entries = entries, ctx = ctx, offset = self.offset })
+
+  if self:get_source_config().max_item_count then
+    local limited_entries = {}
+    for i = 1, math.min(#entries, self:get_source_config().max_item_count) do
+      limited_entries[i] = entries[i]
+    end
+    entries = limited_entries
+  end
 
   return entries
 end
@@ -329,7 +333,7 @@ source.complete = function(self, ctx, callback)
       context = ctx,
       completion_context = completion_context,
     }),
-    self.complete_dedup(function(response)
+    self.complete_dedup(vim.schedule_wrap(function(response)
       if self.context ~= ctx then
         return
       end
@@ -367,7 +371,7 @@ source.complete = function(self, ctx, callback)
         self.status = prev_status
       end
       callback()
-    end)
+    end))
   )
   return true
 end
