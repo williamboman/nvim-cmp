@@ -1,7 +1,6 @@
 local debug = require('cmp.utils.debug')
 local str = require('cmp.utils.str')
 local char = require('cmp.utils.char')
-local pattern = require('cmp.utils.pattern')
 local feedkeys = require('cmp.utils.feedkeys')
 local async = require('cmp.utils.async')
 local keymap = require('cmp.utils.keymap')
@@ -190,16 +189,14 @@ core.on_moved = function(self)
   self:filter()
 end
 
--- Find the suffix for the specified line
+---Returns the suffix of the specified `line`.
+---
+---Contains `%s`: returns everything after the last `%s` in `line`
+---Else:          returns `line` unmodified
+---@param line string
+---@return string suffix
 local function find_line_suffix(line)
-  local i = #line
-  while i > 0 do
-    if line:sub(i, i):find('%s') then
-      return line:sub(i + 1)
-    end
-    i = i - 1
-  end
-  return line
+  return line:match('%S*$') --[[@as string]]
 end
 
 ---Check autoindent
@@ -362,6 +359,10 @@ core.confirm = function(self, e, option, callback)
   e.confirmed = true
 
   debug.log('entry.confirm', e:get_completion_item())
+
+  async.sync(function(done)
+    e:resolve(done)
+  end, config.get().performance.confirm_resolve_timeout)
 
   local release = self:suspend()
 
