@@ -200,7 +200,6 @@ end
 mapping.close_docs = function()
   return function(fallback)
     if not require('cmp').close_docs() then
->>>>>>> upstream/main
       fallback()
     end
   end
